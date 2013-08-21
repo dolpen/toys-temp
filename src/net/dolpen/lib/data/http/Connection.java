@@ -1,4 +1,4 @@
-package net.dolpen.lib.crawl;
+package net.dolpen.lib.data.http;
 
 import net.dolpen.lib.data.input.Streams;
 

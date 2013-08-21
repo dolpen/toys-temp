@@ -1,4 +1,4 @@
-package net.dolpen.lib.data.input;
+package net.dolpen.lib.data;
 
 import java.io.*;
 import java.nio.charset.Charset;
