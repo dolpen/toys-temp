@@ -84,6 +84,7 @@ public class Connection {
     public String getBody() throws IOException {
         String qstr = encodeQuery(q);
         URL u = new URL(url + (qstr != null ? "?" : "") + qstr);
+       System.err.println(url + (qstr != null ? "?" : "") + qstr);
         URLConnection c = u.openConnection();
         c.addRequestProperty("User-Agent", ua);
         if (ref != null) c.addRequestProperty("Referer", ref);
