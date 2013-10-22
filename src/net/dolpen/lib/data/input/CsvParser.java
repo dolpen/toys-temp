@@ -70,13 +70,21 @@ public class CsvParser {
      * @return クオートの数
      */
     private int countQuote(String line) {
-        int pos = line.indexOf('\"');
         int count = 0;
-        while (pos >= 0) {
-            count++;
-            pos = line.indexOf('\"', ++pos);
+        for (char c : line.toCharArray()) {
+            if (c == quote) count++;
         }
         return count;
+    }
+
+    /**
+     * 文字列がレコード断片かどうかを判定する
+     *
+     * @param line 改行なし文字列
+     * @return 判定
+     */
+    private boolean isFragmment(String line) {
+        return countQuote(line) % 2 > 0;
     }
 
     /**
@@ -84,11 +92,12 @@ public class CsvParser {
      *
      * @param reader reader
      * @return 0つ以上の改行を含む行レコード
-     * @throws IOException
+     * @throws java.io.IOException
      */
     private String buildRecord(BufferedReader reader) throws IOException {
         String result = reader.readLine();
-        if (result == null || result.isEmpty()) return "";
+        if (result == null) return null;
+        if (result.isEmpty()) return "";
 
         boolean inString = false;
         String line = result;
@@ -96,17 +105,20 @@ public class CsvParser {
         StringBuilder buff = new StringBuilder();
 
         while (true) {
-            inString = inString ^ countQuote(line) % 2 == 0;
-
-            if (inString && (newline = reader.readLine()) != null) {
+            inString = inString ^ isFragmment(line);
+            if (inString) {
                 buff.append(line);
-                buff.append('\n');
-                line = newline;
-                continue;
-            }
-            if (inString || buff.length() > 0) {
+                if ((newline = reader.readLine()) != null) {
+                    buff.append('\n');
+                    line = newline;
+                    continue;
+                }
+                if (inString) {
+                    buff.append(quote);
+                }
+                return buff.toString();
+            } else {
                 buff.append(line);
-                if (inString) buff.append('\"');
                 return buff.toString();
             }
         }
@@ -124,22 +136,34 @@ public class CsvParser {
         List<String> dest = new ArrayList<String>();
         for (int index = 0; index < columns.length; index++) {
             String column = columns[index];
-            int quotePos = column.indexOf("\"");
+            int quotePos = column.indexOf(quote);
             if (quotePos < 0) {
                 dest.add(column);
             } else {
                 buff.append(column);
-                boolean isInString = countQuote(column) % 2 > 0;
+                boolean isInString = isFragmment(column);
                 while (isInString) {
                     column = columns[++index];
                     buff.append(',').append(column);
-                    isInString = isInString ^ countQuote(column) % 2 == 0;
+                    isInString = isInString ^ isFragmment(column);
                 }
-                dest.add(buff.toString());
+                dest.add(unQuote(buff.toString()));
                 buff.setLength(0);
             }
         }
         return dest;
+    }
+
+    /**
+     * クオートを取る
+     *
+     * @param str 元テキスト
+     * @return 変換後
+     */
+    private String unQuote(String str) {
+        if (str.charAt(0) != quote || str.charAt(str.length() - 1) != quote) return str;
+        if (str.length() == 2) return "";
+        return new String(str.substring(1, str.length() - 2));
     }
 
 
