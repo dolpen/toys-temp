@@ -1,8 +1,11 @@
 package net.dolpen.lib.logic.string;
 
-public class SurrogatePair {
+/**
+ * サロゲートペアを意識したUTF-8文字種のチェックとフィルタリング
+ */
+public class CodePoints {
 
-    public static final int[] MAX_CODE = new int[]{0x007f, 0x07ff, 0xffff, 0x1ffff, 0x1fffff, 0x7ffffff};
+    private static final int[] MAX_CODE = new int[]{0x007f, 0x07ff, 0xffff, 0x1ffff, 0x1fffff, 0x7ffffff};
 
     /**
      * そのUnicodeのバイト数を求めます
@@ -40,6 +43,7 @@ public class SurrogatePair {
      * 文字列中のUTF-8で指定バイト数以上の文字を置換して返す
      *
      * @param str 文字列
+     * @param length バイト数
      * @return 変換済み文字列
      */
     public static String replaceByByteLength(String str, int length, String replace) {
@@ -64,6 +68,7 @@ public class SurrogatePair {
      * 文字列中のUTF-8で指定バイト数以上の文字を消去して返す
      *
      * @param str 文字列
+     * @param length バイト数
      * @return 変換済み文字列
      */
     public static String deleteByByteLength(String str, int length) {
