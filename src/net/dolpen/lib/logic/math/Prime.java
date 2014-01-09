@@ -1,6 +1,8 @@
 package net.dolpen.lib.logic.math;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class Prime {
     /**
@@ -77,5 +79,30 @@ public class Prime {
                 r[j] = false;
         }
         return r;
+    }
+
+    /**
+     * 素数判定 O(sqrt(n))
+     */
+    public static boolean isPrime(int n) {
+        for (int i = 2; i * i <= n; i++) {
+            if (n % i == 0) return false;
+        }
+        return true;
+    }
+
+    /**
+     * 素因数分解  O(sqrt(n))
+     */
+    public static List<Integer> factrization(int n) {
+        List<Integer> l = new ArrayList<Integer>();
+        for (int x = 2; x * x <= n; x++) {
+            while (n % x == 0) {
+                n /= x;
+                l.add(x);
+            }
+        }
+        if (n > 1) l.add(n);
+        return l;
     }
 }
