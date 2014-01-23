@@ -116,6 +116,27 @@ public class Connection {
     }
 
     /**
+     * POSTリクエストして、レスポンスをStringとして返す
+     * @return responseText
+     * @throws IOException
+     */
+    public String bulkPostBody(String body) throws IOException {
+        URL u = new URL(url);
+        URLConnection c = u.openConnection();
+        c.addRequestProperty("User-Agent", ua);
+        if (ref != null) c.addRequestProperty("Referer", ref);
+        c.setDoOutput(true);
+        OutputStream os = c.getOutputStream();//POST用のOutputStreamを取得
+        PrintStream ps = new PrintStream(os);
+        ps.print(body);//データをPOSTする
+        ps.close();
+        String encoding = c.getContentEncoding();
+        if (encoding == null) encoding = ENCODING;
+        InputStream in = Streams.ignoreUtf8Bom(c.getInputStream(), encoding);
+        return Streams.toString(in, encoding);
+    }
+
+    /**
      * クエリパラメータをエンコードする
      * @param q パラメータ
      * @return エンコード済みのクエリ文字列
