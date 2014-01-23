@@ -8,17 +8,19 @@ import java.util.List;
 /**
  * CSVのパースをするやつ
  */
-public class CsvParser {
+public class CsvStreamReader {
 
     private InputStream is;
     private Charset cs;
+    private InputStreamReader reader = null;
+    private BufferedReader buff = null;
 
     /**
      * 文字列から読み込む
      *
      * @param s ソース文字列
      */
-    public CsvParser(String s) {
+    public CsvStreamReader(String s) {
         try {
             init(new ByteArrayInputStream(s.getBytes("UTF-8")), Charset.forName("UTF-8"));
         } catch (UnsupportedEncodingException e) {
@@ -31,7 +33,7 @@ public class CsvParser {
      *
      * @param is ImputStream
      */
-    public CsvParser(InputStream is) {
+    public CsvStreamReader(InputStream is) {
         init(is, Charset.forName("MS932"));
     }
 
@@ -41,7 +43,7 @@ public class CsvParser {
      * @param is ImputStream
      * @param s  文字エンコーディング
      */
-    public CsvParser(InputStream is, String s) {
+    public CsvStreamReader(InputStream is, String s) {
         init(is, Charset.forName(s));
     }
 
@@ -51,7 +53,7 @@ public class CsvParser {
      * @param is ImputStream
      * @param cs 文字エンコーディング
      */
-    public CsvParser(InputStream is, Charset cs) {
+    public CsvStreamReader(InputStream is, Charset cs) {
         init(is, cs);
     }
 
@@ -163,42 +165,45 @@ public class CsvParser {
     private String unQuote(String str) {
         if (str.charAt(0) != quote || str.charAt(str.length() - 1) != quote) return str;
         if (str.length() == 2) return "";
-        return new String(str.substring(1, str.length() - 1));
+        return new String(
+                str.substring(1, str.length() - 1)
+        );
     }
 
 
     /**
-     * 二次元リストを返す
-     *
-     * @return 二次元リスト
+     * 行読みだし
+     * @return
      */
-    public List<List<String>> read() {
-        List<List<String>> dest = new ArrayList<List<String>>();
-        InputStreamReader reader = null;
-        BufferedReader buff = null;
-        try {
+    public List<String> next() {
+        if (buff == null) {
             reader = new InputStreamReader(is, cs);
             buff = new BufferedReader(reader);
+        }
+        try {
             while (true) {
                 String record = buildRecord(buff);
-                if (record == null) break;
+                if (record == null) return null;
                 if (record.isEmpty() || record.startsWith("#")) continue;
-                dest.add(splitRecord(record));
+                return splitRecord(record);
             }
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            try {
-                if (buff != null) {
-                    buff.close();
-                }
-                if (reader != null) {
-                    reader.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
-        return dest;
+        return null;
+    }
+
+    /**
+     * close
+     * @throws IOException
+     */
+    public void close() throws IOException {
+
+        if (buff != null) {
+            buff.close();
+        }
+        if (reader != null) {
+            reader.close();
+        }
     }
 }
